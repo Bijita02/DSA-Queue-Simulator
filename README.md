@@ -1,6 +1,6 @@
 ## DSA-Queue-Simulator
 
-It is a project designed to model a traffic signal management system using queue-based data structures and algorithms for a four-way intersection ,developed as a part of Date Structure and Algorithms (COMP202) course
+It is a project designed to model a traffic signal management system using queue-based data structures and algorithms for a four-way intersection ,developed as a part of Date Structure and Algorithms (COMP202) course.
 ![traffic_simulation](https://github.com/user-attachments/assets/f9b57824-2b22-4678-b19e-02c233a06d7b)
 
 
@@ -47,12 +47,10 @@ The simulation runs smoothly at 60 frames per second (FPS), providing a seamless
 
 
 ## 🧩 Core Components
-**main.c**
-Initializes SDL, starts the program, and runs the main event loop.
-**traffic_simulation.c**
-Handles queue operations, vehicle logic, collision checks, and rendering.
-**traffic_simulation.h**
-Contains data structures, constants, and function declarations
+- `main.c`: Initializes SDL, starts the program, and runs the main event loop.
+- `traffic_simulation.h`: Header file containing structs and function declarations
+- `traffic_simulation.c`: Handles queue operations, vehicle logic, collision checks, and rendering.
+- `generator.c`: Vehicle generation logic
 
 ## ⚙️ Algorithm Design
 
@@ -93,8 +91,8 @@ pacman -S mingw-w64-x86_64-SDL2
 ```
 
 **Windows (Manual):**
-- Download SDL2 from [https://www.libsdl.org/download-2.0.php](https://www.libsdl.org/download-2.0.php)
-
+- Download SDL2 from https://www.libsdl.org/
+- Configure include and library paths
 ---
 
 ### Building the Project
@@ -105,9 +103,11 @@ git clone https://github.com/YOUR_USERNAME/DSA-Queue-Simulator.git
 cd DSA-Queue-Simulator
 
 # Compile the generator and Compile the simulator
-	gcc -o bin/generator src/generator.c src/traffic_simulation.c -lSDL2 -Iinclude -Llib -lmingw32 -lSDL2main -lSDL2
+ gcc main.c generator.c traffic_simulation.c -o main.exe -lmingw32 -lSDL2main -lSDL2
 
-  gcc main.c generator.c traffic_simulation.c -o main.exe -lmingw32 -lSDL2main -lSDL2
+#Run the programIn Command Prompt or PowerShell:
+.\main.exe
 
-#Run the program
-./bin/main.exe
+In MSYS2 / MinGW Terminal:
+./main.exe
+
