@@ -103,12 +103,14 @@ void initializeTrafficLights(TrafficLight* lights);
 void updateTrafficLights(TrafficLight* lights);
 Vehicle* createVehicle(Direction direction);
 void updateVehicle(Vehicle* vehicle, TrafficLight* lights);
-void renderSimulation(SDL_Renderer* renderer, Vehicle* vehicles, TrafficLight* lights, Statistics* stats);
-void renderRoads(SDL_Renderer* renderer);
-void renderQueues(SDL_Renderer* renderer);
 float getDistanceBetweenVehicles(Vehicle* v1, Vehicle* v2);
 int getVehicleLane(Vehicle* vehicle);
 void updateLanePositions(Vehicle* vehicles);
+
+void renderSimulation(SDL_Renderer* renderer, Vehicle* vehicles, TrafficLight* lights, Statistics* stats);
+void renderRoads(SDL_Renderer* renderer);
+void renderQueues(SDL_Renderer* renderer);
+
 
 // Queue functions
 void initQueue(Queue* q);

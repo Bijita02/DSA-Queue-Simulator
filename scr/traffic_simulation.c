@@ -15,9 +15,8 @@ int vehiclesInLane[4] = {0};
 
 const SDL_Color VEHICLE_COLORS[] = {
     {223, 197, 123,255}, // REGULAR_CAR: Gold
-    {255, 0, 0, 255}, // AMBULANCE: Red
+    {0, 102, 204, 255}, // AMBULANCE: Blue
     {6, 228, 228,225}, // POLICE_CAR: SkyBlue
-    {255, 69, 0, 255} // FIRE_TRUCK: Orange-Red
 };
 
 float getDistanceBetweenVehicles(Vehicle *v1, Vehicle *v2)
@@ -83,7 +82,7 @@ void updateTrafficLights(TrafficLight *lights)
         for (int j = 0; j < vehiclesInLane[i]; j++)
         {
             Vehicle *vehicle = laneVehicles[i][j].vehicle;
-            if (vehicle && (vehicle->type == AMBULANCE || vehicle->type == POLICE_CAR || vehicle->type == FIRE_TRUCK))
+            if (vehicle && (vehicle->type == AMBULANCE || vehicle->type == POLICE_CAR))
             {
                 hasSpecialVehicle = true;
                 priorityLaneCandidate = i;
@@ -142,7 +141,7 @@ void updateTrafficLights(TrafficLight *lights)
         for (int j = 0; j < vehiclesInLane[priorityLane]; j++)
         {
             Vehicle *vehicle = laneVehicles[priorityLane][j].vehicle;
-            if (vehicle && (vehicle->type == AMBULANCE || vehicle->type == POLICE_CAR || vehicle->type == FIRE_TRUCK))
+            if (vehicle && (vehicle->type == AMBULANCE || vehicle->type == POLICE_CAR))
             {
                 stillHasSpecialVehicle = true;
                 break;
@@ -185,7 +184,6 @@ void updateTrafficLights(TrafficLight *lights)
         lastStateChangeTicks = currentTicks;
         printf("State changed at %d ms. Phase: %d, Reason: Normal Cycle\n", currentTicks, currentPhase);
     }
-
     // Reset canSkipLight flag for non-emergency vehicles
     // for (int i = 0; i < 4; i++)
     // {
@@ -215,29 +213,22 @@ Vehicle *createVehicle(Direction direction)
     {
         vehicle->type = POLICE_CAR;
     }
-    else if (typeRoll < 15)
-    {
-        vehicle->type = FIRE_TRUCK;
-    }
     else
     {
         vehicle->type = REGULAR_CAR;
     }
-
     vehicle->active = true;
-    vehicle->canSkipLight = false; // Initialize canSkipLight to false
+    vehicle->canSkipLight = false;
+    
     // Set speed based on vehicle type
     switch (vehicle->type)
     {
     case AMBULANCE:
     case POLICE_CAR:
-        vehicle->baseSpeed = 4.0f;
-        break;
-    case FIRE_TRUCK:
-        vehicle->baseSpeed = 3.5f;
+        vehicle->baseSpeed = 2.0f;
         break;
     default:
-        vehicle->baseSpeed = 2.0f;
+        vehicle->baseSpeed = 1.5f;
     }
     vehicle->speed = vehicle->baseSpeed;
 
@@ -245,11 +236,11 @@ Vehicle *createVehicle(Direction direction)
     vehicle->turnAngle = 0.0f;
     vehicle->turnProgress = 0.0f;
 
-    // 30% chance to turn
+    // 30% chance to turn left
     int turnChance = rand() % 100;
     if (turnChance < 30)
     {
-        vehicle->turnDirection = (turnChance < 15) ? TURN_LEFT : TURN_RIGHT;
+        vehicle->turnDirection = TURN_LEFT;
     }
     else
     {
@@ -259,74 +250,82 @@ Vehicle *createVehicle(Direction direction)
     // Set dimensions based on direction
     if (direction == DIRECTION_NORTH || direction == DIRECTION_SOUTH)
     {
-        vehicle->rect.w = 20; // width
-        vehicle->rect.h = 30; // height
+        vehicle->rect.w = 20;
+        vehicle->rect.h = 30;
     }
     else
     {
-        vehicle->rect.w = 30; // width
-        vehicle->rect.h = 20; // height
+        vehicle->rect.w = 30;
+        vehicle->rect.h = 20;
     }
 
-    // Fixed spawn positions for each direction
+    // Spawn positions - left-turning vehicles spawn in leftmost lane
     switch (direction)
     {
-    case DIRECTION_NORTH: // Spawns at bottom, moves up
-        if (vehicle->turnDirection == TURN_RIGHT)
+    case DIRECTION_NORTH:
+        if (vehicle->turnDirection == TURN_LEFT)
         {
+            // Leftmost lane for left turns
+            vehicle->x = INTERSECTION_X - LANE_WIDTH + 10;
             vehicle->canSkipLight = true;
-            vehicle->x = INTERSECTION_X - LANE_WIDTH / 2 - 30;
         }
         else
         {
+            // Right lane for going straight
             vehicle->x = INTERSECTION_X - LANE_WIDTH / 2 + 10;
         }
         vehicle->y = WINDOW_HEIGHT - vehicle->rect.h;
         break;
 
-    case DIRECTION_SOUTH: // Spawns at top, moves down
-        if (vehicle->turnDirection == TURN_RIGHT)
+    case DIRECTION_SOUTH:
+        if (vehicle->turnDirection == TURN_LEFT)
         {
+            // Leftmost lane for left turns
+            vehicle->x = INTERSECTION_X + LANE_WIDTH - 30;
             vehicle->canSkipLight = true;
-            vehicle->x = INTERSECTION_X + 40;
         }
         else
         {
+            // Right lane for going straight
             vehicle->x = INTERSECTION_X + 10;
         }
         vehicle->y = 0;
         break;
 
-    case DIRECTION_EAST: // Spawns at left, moves right
-        if (vehicle->turnDirection == TURN_RIGHT)
+    case DIRECTION_EAST:
+        if (vehicle->turnDirection == TURN_LEFT)
         {
+            // Leftmost lane for left turns
+            vehicle->y = INTERSECTION_Y - LANE_WIDTH + 10;
             vehicle->canSkipLight = true;
-            vehicle->y = INTERSECTION_Y - LANE_WIDTH / 2 - 40 + 10;
         }
         else
         {
+            // Right lane for going straight
             vehicle->y = INTERSECTION_Y - LANE_WIDTH / 2 + 10;
         }
         vehicle->x = 0;
         break;
 
-    case DIRECTION_WEST: // Spawns at right, moves left
-        vehicle->x = WINDOW_WIDTH - vehicle->rect.w;
-        if (vehicle->turnDirection == TURN_RIGHT)
+    case DIRECTION_WEST:
+        if (vehicle->turnDirection == TURN_LEFT)
         {
+            // Leftmost lane for left turns
+            vehicle->y = INTERSECTION_Y + LANE_WIDTH - 30;
             vehicle->canSkipLight = true;
-            vehicle->y = INTERSECTION_Y + 40;
         }
         else
         {
+            // Right lane for going straight
             vehicle->y = INTERSECTION_Y;
         }
-        vehicle->isInRightLane = (vehicle->y > INTERSECTION_Y);
+        vehicle->x = WINDOW_WIDTH - vehicle->rect.w;
         break;
     }
 
     vehicle->rect.x = (int)vehicle->x;
     vehicle->rect.y = (int)vehicle->y;
+    vehicle->isInRightLane = false;
 
     return vehicle;
 }
@@ -501,10 +500,7 @@ void updateVehicle(Vehicle *vehicle, TrafficLight *lights)
         {
         case AMBULANCE:
         case POLICE_CAR:
-            vehicle->speed = 4.0f;
-            break;
-        case FIRE_TRUCK:
-            vehicle->speed = 3.5f;
+            vehicle->speed = 2.5f;
             break;
         default:
             vehicle->speed = 2.0f;
@@ -529,7 +525,7 @@ void updateVehicle(Vehicle *vehicle, TrafficLight *lights)
 
         if (distanceToTurnPoint < stopDistance)
         {
-            vehicle->speed *= 1.0f;
+            vehicle->speed *= 0.8f;
             if (vehicle->speed < 0.5f)
             {
                 vehicle->speed = 0.5f;
@@ -537,23 +533,23 @@ void updateVehicle(Vehicle *vehicle, TrafficLight *lights)
         }
     }
 
-    // Check if at turning point
-    bool atTurnPoint = false;
-    switch (vehicle->direction)
-    {
+// Check if at turning point
+bool atTurnPoint = false;
+switch (vehicle->direction)
+{
     case DIRECTION_NORTH:
-        atTurnPoint = vehicle->y <= INTERSECTION_Y;
+        atTurnPoint = (vehicle->y <= INTERSECTION_Y + 10);
         break;
     case DIRECTION_SOUTH:
-        atTurnPoint = vehicle->y >= INTERSECTION_Y;
+        atTurnPoint = (vehicle->y >= INTERSECTION_Y - 10);
         break;
     case DIRECTION_EAST:
-        atTurnPoint = vehicle->x >= INTERSECTION_X;
+        atTurnPoint = (vehicle->x >= INTERSECTION_X - 10);
         break;
     case DIRECTION_WEST:
-        atTurnPoint = vehicle->x <= INTERSECTION_X;
+        atTurnPoint = (vehicle->x <= INTERSECTION_X + 10);
         break;
-    }
+}
 
     // Start turning if at turn point
     if (atTurnPoint && vehicle->turnDirection != TURN_NONE &&
@@ -564,109 +560,133 @@ void updateVehicle(Vehicle *vehicle, TrafficLight *lights)
         vehicle->turnProgress = 0.0f;
     }
 
-    // Movement logic
-    float moveSpeed = vehicle->speed;
-    if (vehicle->state == STATE_MOVING || vehicle->state == STATE_STOPPING)
+// Movement logic
+float moveSpeed = vehicle->speed;
+if (vehicle->state == STATE_MOVING || vehicle->state == STATE_STOPPING)
+{
+    switch (vehicle->direction)
     {
-        switch (vehicle->direction)
-        {
-        case DIRECTION_NORTH:
-            vehicle->y -= moveSpeed;
-            break;
-        case DIRECTION_SOUTH:
-            vehicle->y += moveSpeed;
-            break;
-        case DIRECTION_EAST:
-            vehicle->x += moveSpeed;
-            break;
-        case DIRECTION_WEST:
-            vehicle->x -= moveSpeed;
-            break;
-        }
+    case DIRECTION_NORTH:
+        vehicle->y -= moveSpeed;
+        break;
+    case DIRECTION_SOUTH:
+        vehicle->y += moveSpeed;
+        break;
+    case DIRECTION_EAST:
+        vehicle->x += moveSpeed;
+        break;
+    case DIRECTION_WEST:
+        vehicle->x -= moveSpeed;
+        break;
     }
-    else if (vehicle->state == STATE_TURNING)
+}
+else if (vehicle->state == STATE_TURNING)
+{
+    float turnSpeed = 1.0f;
+    vehicle->turnAngle += turnSpeed;
+    vehicle->turnProgress = vehicle->turnAngle / 90.0f;
+    
+    if (vehicle->turnAngle >= 90.0f)
     {
-        // Calculate turn angle based on vehicle type
-        float turnSpeed = 1.0f;
-
-        vehicle->turnAngle += turnSpeed;
-        vehicle->turnProgress = vehicle->turnAngle / 90.0f;
-        if (vehicle->turnAngle >= 90.0f)
+        vehicle->state = STATE_MOVING;
+        vehicle->turnAngle = 0.0f;
+        vehicle->turnProgress = 0.0f;
+        vehicle->turnDirection = TURN_NONE;
+        
+        // Update direction and position in left lane of new direction
+        Direction oldDirection = vehicle->direction;
+        switch (oldDirection)
         {
-            vehicle->state = STATE_MOVING;
-            vehicle->turnAngle = 0.0f;
-            vehicle->turnProgress = 0.0f;
-            vehicle->isInRightLane = !vehicle->isInRightLane;
+            case DIRECTION_NORTH: // Was North, now WEST
+                vehicle->direction = DIRECTION_WEST;
+                vehicle->rect.w = 30;
+                vehicle->rect.h = 20;
+                vehicle->y = INTERSECTION_Y - LANE_WIDTH / 2 + 10;
+                vehicle->x = INTERSECTION_X - LANE_WIDTH - 20;
+                break;
+                
+            case DIRECTION_SOUTH: // Was South, now EAST
+                vehicle->direction = DIRECTION_EAST;
+                vehicle->rect.w = 30;
+                vehicle->rect.h = 20;
+                vehicle->y = INTERSECTION_Y - LANE_WIDTH / 2 + 10;
+                vehicle->x = INTERSECTION_X + LANE_WIDTH + 20;
+                break;
+                
+            case DIRECTION_EAST: // Was East, now NORTH
+                vehicle->direction = DIRECTION_NORTH;
+                vehicle->rect.w = 20;
+                vehicle->rect.h = 30;
+                vehicle->x = INTERSECTION_X - LANE_WIDTH / 2 + 10;
+                vehicle->y = INTERSECTION_Y - LANE_WIDTH - 20;
+                break;
+                
+            case DIRECTION_WEST: // Was West, now SOUTH
+                vehicle->direction = DIRECTION_SOUTH;
+                vehicle->rect.w = 20;
+                vehicle->rect.h = 30;
+                vehicle->x = INTERSECTION_X + 10;
+                vehicle->y = INTERSECTION_Y + LANE_WIDTH + 20;
+                break;
         }
-
-        // Calculate new position based on turn angle
-        float turnRadius = 0.5f;
-        float turnCenterX = 0;
-        float turnCenterY = 0;
-        float turnCenter = 15;
-        switch (vehicle->direction)
-        {
-        case DIRECTION_NORTH:
-            turnCenterX = vehicle->x + (vehicle->isInRightLane ? turnCenter : -turnCenter);
-            turnCenterY = vehicle->y;
-            ;
-            break;
-        case DIRECTION_SOUTH:
-            turnCenterX = vehicle->x + (vehicle->isInRightLane ? -turnCenter : turnCenter);
-            turnCenterY = vehicle->y;
-            break;
-        case DIRECTION_EAST:
-            turnCenterX = vehicle->x;
-            turnCenterY = vehicle->y + (!vehicle->isInRightLane ? turnCenter : -turnCenter);
-            break;
-        case DIRECTION_WEST:
-            turnCenterX = vehicle->x;
-            turnCenterY = vehicle->y + (!vehicle->isInRightLane ? -turnCenter : turnCenter);
-            break;
-        }
-
+        
+        // Restore normal speed after turn
+        vehicle->speed = vehicle->baseSpeed;
+    }
+    else
+    {
+        // Execute the turn with proper arc
+        float turnRadius = 35.0f;
         float radians = vehicle->turnAngle * M_PI / 180.0f;
+        
         switch (vehicle->direction)
         {
-        case DIRECTION_NORTH:
-            vehicle->x = turnCenterX + turnRadius * sin(radians);
-            vehicle->y = turnCenterY - turnRadius * cos(radians);
-            break;
-        case DIRECTION_SOUTH:
-            vehicle->x = turnCenterX - turnRadius * sin(radians);
-            vehicle->y = turnCenterY + turnRadius * cos(radians);
-            break;
-        case DIRECTION_EAST:
-            vehicle->x = turnCenterX + turnRadius * cos(radians);
-            vehicle->y = turnCenterY + turnRadius * sin(radians);
-            break;
-        case DIRECTION_WEST:
-            vehicle->x = turnCenterX - turnRadius * cos(radians);
-            vehicle->y = turnCenterY - turnRadius * sin(radians);
-            break;
+            case DIRECTION_NORTH: // Turning left to WEST
+            {
+                float centerX = INTERSECTION_X - LANE_WIDTH;
+                float centerY = INTERSECTION_Y;
+                vehicle->x = centerX - turnRadius * (1 - cos(radians));
+                vehicle->y = centerY - turnRadius * sin(radians);
+                break;
+            }
+            case DIRECTION_SOUTH: // Turning left to EAST
+            {
+                float centerX = INTERSECTION_X + LANE_WIDTH;
+                float centerY = INTERSECTION_Y;
+                vehicle->x = centerX + turnRadius * (1 - cos(radians));
+                vehicle->y = centerY + turnRadius * sin(radians);
+                break;
+            }
+            case DIRECTION_EAST: // Turning left to NORTH
+            {
+                float centerX = INTERSECTION_X;
+                float centerY = INTERSECTION_Y - LANE_WIDTH;
+                vehicle->y = centerY - turnRadius * (1 - cos(radians));
+                vehicle->x = centerX + turnRadius * sin(radians);
+                break;
+            }
+            case DIRECTION_WEST: // Turning left to SOUTH
+            {
+                float centerX = INTERSECTION_X;
+                float centerY = INTERSECTION_Y + LANE_WIDTH;
+                vehicle->x = centerX - turnRadius * sin(radians);
+                vehicle->y = centerY + turnRadius * (1 - cos(radians));
+                break;
+            }
         }
     }
-    // Update rectangle position
-    vehicle->rect.x = (int)vehicle->x;
-    vehicle->rect.y = (int)vehicle->y;
+}
 
-    // Check if vehicle has left the screen
-    if (vehicle->x < -100 || vehicle->x > WINDOW_WIDTH + 100 ||
-        vehicle->y < -100 || vehicle->y > WINDOW_HEIGHT + 100)
-    {
-        vehicle->active = false;
-    }
+// Update rectangle position
+vehicle->rect.x = (int)vehicle->x;
+vehicle->rect.y = (int)vehicle->y;
 
-    // Update rectangle position
-    vehicle->rect.x = (int)vehicle->x;
-    vehicle->rect.y = (int)vehicle->y;
-
-    // Check if vehicle has left the screen
-    if (vehicle->x < -100 || vehicle->x > WINDOW_WIDTH + 100 ||
-        vehicle->y < -100 || vehicle->y > WINDOW_HEIGHT + 100)
-    {
-        vehicle->active = false;
-    }
+// Check if vehicle has left the screen
+if (vehicle->x < -100 || vehicle->x > WINDOW_WIDTH + 100 ||
+    vehicle->y < -100 || vehicle->y > WINDOW_HEIGHT + 100)
+{
+    vehicle->active = false;
+}
 }
 
 void updateLanePositions(Vehicle *vehicles)
