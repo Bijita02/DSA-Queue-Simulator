@@ -10,22 +10,28 @@ Vehicle flow at the four-way intersection is handled using queue-based data stru
 
 ## ✨ Key Features
 
-- **Queue-Based Traffic Handling**
+- **Queue-Based Traffic Handling**:
+
 Each lane at the intersection uses a FIFO (First-In-First-Out) queue to ensure vehicles are processed in an orderly and fair manner.
 
-- **Left-Turn Support**
+- **Left-Turn Support**:
+
 Around 15% of the vehicles are designed to take left turns, allowing realistic and smooth turning behavior at the intersection.
 
-- **Smart Traffic Signals**
+- **Smart Traffic Signals**:
+
 The traffic lights work intelligently—vehicles making left turns are allowed to move even during a red signal, while vehicles going straight must wait.
 
-- **Real-Time Visual Simulation**
+- **Real-Time Visual Simulation**:
+  
 The system uses SDL2 graphics to display vehicles in soft pastel colors moving over a green background, making the simulation visually clear and appealing.
 
-- **Collision Prevention**
+- **Collision Prevention**:
+  
 To ensure safety, the system maintains a minimum distance of 80 pixels between consecutive vehicles in the same lane.
 
-- **High Performance**
+- **High Performance**:
+  
 The simulation runs smoothly at 60 frames per second (FPS), providing a seamless real-time experience.
 
 
