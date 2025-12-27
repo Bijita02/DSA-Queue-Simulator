@@ -74,7 +74,7 @@ The simulation runs smoothly at 60 frames per second (FPS), providing a seamless
 - Update traffic signals every 5 seconds
 - Render roads, signals, and vehicles
 - Repeat at 60 FPS
-- 
+  
 ## ⏳ Time Complexity Analysis
 | 🔍**Operation** |⏱️**Complexity** | 📝**Description** |
 |-----------|-----------|-------------|
@@ -98,7 +98,8 @@ pacman -S mingw-w64-x86_64-SDL2
 
 **Windows (Manual):**
 - Download SDL2 from https://www.libsdl.org/
-- Configure include and library paths
+- Extract it to a convenient folder.
+- Configure your compiler to include SDL2 include and library paths
 ---
 
 ### Building the Project
@@ -116,4 +117,3 @@ cd DSA-Queue-Simulator
 
 In MSYS2 / MinGW Terminal:
 ./main.exe
-
